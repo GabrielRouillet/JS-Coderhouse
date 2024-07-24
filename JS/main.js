@@ -1,9 +1,3 @@
-const cupones = [
-    new Cupon("CUPON10", 0.10),
-    new Cupon("CUPON15", 0.15),
-    new Cupon("CUPON20", 0.20)
-]
-
 const productos = [
     new Producto(1,"Coca Cola",2300),
     new Producto(2,"Fanta",2100),
@@ -11,48 +5,84 @@ const productos = [
     new Producto(4,"Monster",3000),
     new Producto(5,"Manaos",1200)
 ]
+let botonDatos = false;
 
-const carrito = new Carrito([], null);
-
-const cliente = new Cliente(
-    prompt("Ingrese su nombre y apellido:"),
-    prompt("Ingrese su edad:"),
-    prompt("Ingrese su domicilio completo:"),
-    prompt("ingrese su DNI:")
-);
-
-let seguirComprando = confirm("Desea realizar una compra?")
-while (seguirComprando) {
-    const nombreProducto = prompt("Ingrese el nombre del producto que desea comprar: ");
-    const productoSeleccionado = productos.find((producto) => producto.nombre.toLowerCase() === nombreProducto.toLowerCase());
-    if(productoSeleccionado) {
-        const cantidadProducto = prompt("Ingrese la cantidad:");
-        carrito.items.push(new ItemComprado(productoSeleccionado, cantidadProducto));
-    } else {
-        alert("El producto ingresado no existe")
+    document.getElementById('form-cliente').addEventListener('submit', function(event) {
+        event.preventDefault();
+    botonDatos = true; 
+    const nombreApellido = document.getElementById('nombreApellido').value;
+    let edad = document.getElementById('edad').value;
+    let domicilio = document.getElementById('domicilio').value;
+    let dni = document.getElementById('dni').value;
+    return cliente = new Cliente (
+        nombreApellido,
+        edad,
+        domicilio,
+        dni,
+    )
+    })
+function generarCarrito() {
+    let carrito = localStorage.getItem('carrito')
+    if(!carrito) {
+        return;
     }
+
+    carrito = JSON.parse(carrito);
+
+    const carritoDOM = document.getElementById('carrito')
+    carritoDOM.innerHTML = ''
+
+    carrito.items.forEach(item => {
+        const itemCarrito = document.createElement('li')
+        itemCarrito.className = "list-group-item d-flex justify-content-between align-items-start"
+
+        itemCarrito.innerHTML = `
+            <div class="ms-2 me-auto">
+            <div class="fw-bold">${item.producto.nombre}</div>
+            \$${item.producto.precio}
+            </div>
+            <span class="badge text-bg-primary rounded-pill">${item.cantidad}</span>
+        `
+
+        carritoDOM.appendChild(itemCarrito);
+    })
+}
+
+document.getElementById('form-carrito').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const producto = productos.find(p => p.id === parseInt(document.getElementById('carrito-producto').value))
+    const cantidad = document.getElementById('carrito-cantidad').value;
+    const itemAgregado = new ItemComprado(producto, cantidad);
+    const carrito =  localStorage.getItem('carrito') ?
+        JSON.parse(localStorage.getItem('carrito')) :
+        new Carrito([], null)
     
-    seguirComprando = confirm("Desea comprar otro producto?")
-}
-const poseeCupon = confirm ("Posee un cupon de descuento?");
-if (poseeCupon) {
-    const nombreCupon = prompt("Ingrese el cupon:");
-    const cuponSeleccionado = cupones.find((cupon) => cupon.codigo.toUpperCase() === nombreCupon.toUpperCase());
-    if(cuponSeleccionado){
-        carrito.cupon = cuponSeleccionado
-    }
-    else{
-        alert("No existe el cupon");
-        
-    }
-}
-let listaDeProductosComprados = '';
-carrito.items.forEach(item => listaDeProductosComprados += item.producto.nombre + ' x ' + item.cantidad + '\n')
+    carrito.items.push(itemAgregado);
+    localStorage.setItem('carrito', JSON.stringify(carrito))
 
-alert("Estimado cliente "+ cliente.nombre + ", realizo la compra de: \n"+ listaDeProductosComprados);
-alert("El total a pagar es: " + carrito.obtenerTotalBruto())
-if (carrito.cupon){
-    alert("Con el cupon de descuento debe pagar el valor de: " + carrito.obtenerTotalNeto());
+    generarCarrito()
+});
+
+function comprar() {
+    if(!botonDatos) {
+        alert('Recordar llenar los datos personales primero')
+        return;
+    }
+    const carrito = JSON.parse(localStorage.getItem('carrito'))
+    const historial = localStorage.getItem('historial-compras') ? JSON.parse(localStorage.getItem('historial-compras')) : []
+
+    carrito.items.forEach(itemComprado => historial.push(itemComprado));
+    localStorage.setItem('historial-compras', JSON.stringify(historial))
+    localStorage.removeItem('carrito')
+    document.getElementById('carrito').innerHTML = ''
+    let listaDeProductosComprados = '';
+carrito.items.forEach(item => listaDeProductosComprados += item.producto.nombre + ' x ' + item.cantidad + " X " + item.producto.precio + '\n')
+console.log(listaDeProductosComprados)
+let totalPagar = 0;
+carrito.items.forEach(item => totalPagar += item.cantidad * item.producto.precio)
+console.log(totalPagar)
+const pagarDOM = document.getElementById('pagar')
+    pagarDOM.innerHTML = "<p>Estimad@ "+ cliente.nombre+ "</p>"+ "<p>Lo enviaremos a su domicilio: "+ cliente.domicilio+"</p>" +"<p>y debe pagar un total de:"+ " $" + totalPagar+ "</p>"
 }
-alert("Lo enviaremos a su domicilio: " + cliente.domicilio);
-alert("¡Gracias por su compra!");
+
+generarCarrito()
