@@ -131,13 +131,11 @@ function eliminarDelCarrito(id) {
     });
 }
 
-// Llamar a renderCarrito cuando la página se cargue para mostrar el carrito actualizado
 document.addEventListener('DOMContentLoaded', () => {
     renderCarrito();
     totalProductos();
 });
 
-    // Manejar el envío del formulario de datos personales
     const formCliente = document.getElementById('form-cliente');
     formCliente.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -156,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Crear y almacenar el objeto Cliente en localStorage
+
         const cliente = new Cliente(nombreApellido, edad, domicilio, dni);
         localStorage.setItem('cliente', JSON.stringify(cliente));
 
@@ -170,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const botonComprar = document.querySelector('button.btn-success');
     botonComprar.addEventListener('click', () => {
         const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
-        const cupon = new Cupon('DESCUENTO10', 0.1); // Suponiendo un cupón de descuento del 10%
+        const cupon = new Cupon('DESCUENTO10', 0.1); 
 
         if (carrito.length === 0) {
             Swal.fire({
@@ -181,7 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Verificar si los datos personales están disponibles
         const cliente = JSON.parse(localStorage.getItem('cliente'));
         if (!cliente) {
             Swal.fire({
@@ -190,22 +187,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 icon: 'info',
                 confirmButtonText: 'Ir al formulario',
                 preConfirm: () => {
-                    // Mostrar el formulario de datos personales
                     document.getElementById('offcanvasWithBothOptions').classList.add('show');
                 }
             });
             return;
         }
 
-        // Crear instancias de ItemComprado
         const items = carrito.map(item => new ItemComprado(item.producto, item.cantidad));
-
-        // Crear el carrito y calcular el total bruto
         const carritoObj = new Carrito(items, cupon);
         const totalBruto = carritoObj.obtenerTotalBruto();
         const totalNeto = carritoObj.obtenerTotalNeto();
-
-        // Preparar el contenido del detalle de la compra
         let detalleCompra = '<ul>';
         carrito.forEach(item => {
             const subtotal = item.producto.precio * item.cantidad;
@@ -213,23 +204,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         detalleCompra += '</ul>';
         detalleCompra += `<p><b>Total Bruto:</b> $${totalBruto.toFixed(2)}</p>`;
-        detalleCompra += `<p><b>Total con Descuento:</b> $${totalNeto.toFixed(2)}</p>`;
-
-        // Mostrar el detalle de la compra con SweetAlert2
+        detalleCompra += `<p><b>Total con descuento de Gabby Blinders:</b> $${totalNeto.toFixed(2)}</p>`;
         Swal.fire({
             title: 'Detalle de Compra',
             html: detalleCompra,
             icon: 'info',
             confirmButtonText: 'Aceptar'
         }).then(() => {
-            // Mostrar el total final a pagar y la dirección de envío
             Swal.fire({
                 title: 'Compra realizada',
                 text: `El total a pagar es $${totalNeto.toFixed(2)}. Su pedido será enviado a ${cliente.domicilio} en 24 HS.`,
                 icon: 'success',
                 confirmButtonText: 'Aceptar'
             }).then(() => {
-                // Limpiar el carrito y los datos del cliente después de la compra
                 localStorage.removeItem("carrito");
                 localStorage.removeItem("cliente");
                 renderCarrito();
