@@ -1,4 +1,4 @@
-    document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     const tragosContainer = document.getElementById('tragos-container');
     const apiUrl = 'https://www.thecocktaildb.com/api/json/v1/1/search.php?s=';
 
