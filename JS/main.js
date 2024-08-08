@@ -35,7 +35,7 @@ const renderProductos = (productos) => {
         <img src="${producto.img}" class="card-img-top" alt="${producto.nombre}">
         <div class="card-body">
             <p class="card-text text-primary "><b>$ ${producto.precio}</b><br><span class="card-text text-secondary">${producto.nombre}</span></p>
-        <input id="carrito-cantidad-${producto.id}" name="carrito-cantidad" class="form-control form-control-md col d-inline p-2" type="number" placeholder="Seleccione Cantidad" aria-label=".form-control-lg example">
+        <input id="carrito-cantidad-${producto.id}" name="carrito-cantidad" min="1" class="form-control form-control-md col d-inline p-2" type="number" placeholder="Seleccione Cantidad" aria-label=".form-control-lg example">
             </div>
         <button onclick="agregarAlcarrito(${producto.id})" type="submit" class="btn btn-dark rounded-pill">Agregar Producto</button>
         </div>
@@ -53,7 +53,11 @@ function agregarAlcarrito(id) {
     const cantidad = parseInt(document.getElementById(`carrito-cantidad-${id}`).value);
 
     if (isNaN(cantidad) || cantidad <= 0) {
-        alert("Cantidad no válida");
+        Swal.fire({
+            icon: 'error',
+            title: 'Cantidad Invalida',
+            text: 'Seleccione la cantidad de productos que desea agregar al carrito.',
+        });
         event.preventDefault()
         return;
         
