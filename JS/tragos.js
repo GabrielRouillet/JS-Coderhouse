@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getIngredientes(trago) {
-        let ingredientes = [];
+        const ingredientes = [];
         for (let i = 1; i <= 15; i++) {
             const ingrediente = trago[`strIngredient${i}`];
             const medida = trago[`strMeasure${i}`];

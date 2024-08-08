@@ -24,7 +24,27 @@ const productos = [
     new Producto(23,"Manaos Pomelo",1400,"./img/pomelo.png"),
     new Producto(24,"Speed",1100,"./img/speed.png"),
 ];
-
+const esMayor = localStorage.getItem("esMayor")
+if(!esMayor){
+Swal.fire({
+    title: "IMPORTANTE!",
+    text: "Eres mayor de 18 años?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Si",
+    cancelButtonText:"No",
+    allowOutsideClick: false,
+  }).then((result) => { console.log (result)
+    if (!result.isConfirmed) {
+      window.location.href = "https://www.google.com"
+    }
+    else{
+        localStorage.setItem("esMayor", "T")
+    }
+  });
+}
 const renderProductos = (productos) => {
     let contenidoHTML = "";
     productos.forEach(producto => {
@@ -223,6 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }).then(() => {
                 localStorage.removeItem("carrito");
                 localStorage.removeItem("cliente");
+                localStorage.removeItem("esMayor");
                 renderCarrito();
                 totalProductos();
             });
