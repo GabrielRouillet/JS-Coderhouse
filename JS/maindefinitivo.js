@@ -23,14 +23,12 @@ const productos = [
     new Producto(22,"Sprite",2800,"./img/sprite.png"),
     new Producto(23,"Manaos Pomelo",1400,"./img/pomelo.png"),
     new Producto(24,"Speed",1100,"./img/speed.png"),
-]
-
+];
 
 const renderProductos = (productos) => {
     let contenidoHTML = "";
     productos.forEach(producto => {
         contenidoHTML += `
-        
         <div class="col-md-3">
         <form>
         <div class="card border-0">
@@ -49,53 +47,57 @@ const renderProductos = (productos) => {
 
 renderProductos(productos);
 
-
 function agregarAlcarrito(id) {
     const producto = productos.find(item => item.id == id);
     const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
-    console.log(typeof (document.getElementById(`carrito-cantidad-${id}`).value) )
-    if (parseInt(document.getElementById(`carrito-cantidad-${id}`).value) <= 0){
-        alert("error")
-        return
-    }
     const cantidad = parseInt(document.getElementById(`carrito-cantidad-${id}`).value);
-    const itemAgregado = new ItemComprado(producto, cantidad);
-    carrito.push(producto);
+    if (isNaN(cantidad) || cantidad <= 0) {
+        Swal.fire({
+            icon: "error",
+            title: "Cantidad no valida",
+            showConfirmButton: false,
+            timer: 1000
+        });
+        event.preventDefault()
+        return;
+    }
+    const productoExistente = carrito.find(item => item.producto.id == id);
+    if (productoExistente) {
+        productoExistente.cantidad += cantidad;
+    } else {
+        carrito.push({ producto, cantidad });
+        event.preventDefault()
+    }
     localStorage.setItem("carrito", JSON.stringify(carrito));
     totalProductos();
-    console.log ("se agrego al carrito")
     Swal.fire({
         icon: "success",
         title: "Agregado al Carrito",
         showConfirmButton: false,
         timer: 1000
-      });
-      renderCarrito();
-      console.log(itemAgregado)
-      console.log(cantidad)
-      console
-      event.preventDefault()
-      return itemAgregado
+    });
+    renderCarrito();
+    event.preventDefault();
 }
 
 function totalProductos(){
     const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
-    document.getElementById("totalCarrito").innerHTML = carrito.length;
+    const total = carrito.reduce((acc, item) => acc + item.cantidad, 0);
+    document.getElementById("totalCarrito").innerHTML = total;
 }
-totalProductos();
 
-
-function renderCarrito(){
+function renderCarrito() {
     const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
     let contenidoHTML = `<table class="table">
     <tbody id="tabla_carrito">`;   
-    for (const producto of carrito){
+    for (const item of carrito){
         contenidoHTML += `<tr>
-        <td><img src="${producto.img}" class="card-img-top" alt="${producto.nombre}" width="16"></td>
-        <td>${producto.nombre}</td>
-        <td>$${producto.precio}</td>
-        <td><button class="btn btn-danger">X</button></td>
-        </tr> `;    
+        <td><img src="${item.producto.img}" class="card-img-top" alt="${item.producto.nombre}" width="16"></td>
+        <td>${item.producto.nombre}</td>
+        <td>$${item.producto.precio}</td>
+        <td>x${item.cantidad}u</td>
+        <td><button class="btn btn-danger" id="eliminar-${item.producto.id}">x</button></td>
+        </tr>`;    
     }
 
     contenidoHTML += `</tbody>
@@ -103,12 +105,35 @@ function renderCarrito(){
 
     document.getElementById("contenido").innerHTML = contenidoHTML;
 
+    agregarEventosEliminar();
 }
 
-
-renderCarrito()
-
-function eliminarProducto() {
-    
-    
+function agregarEventosEliminar() {
+    const botonesEliminar = document.querySelectorAll('button[id^="eliminar-"]');
+    botonesEliminar.forEach(boton => {
+        boton.addEventListener('click', (event) => {
+            const id = event.target.id.replace('eliminar-', '');
+            eliminarDelCarrito(id);
+        });
+    });
 }
+
+function eliminarDelCarrito(id) {
+    let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+    carrito = carrito.filter(item => item.producto.id != id);
+    localStorage.setItem("carrito", JSON.stringify(carrito));
+    renderCarrito();
+    totalProductos();
+    Swal.fire({
+        icon: "success",
+        title: "Eliminado del Carrito",
+        showConfirmButton: false,
+        timer: 1000
+    });
+}
+
+// Llamar a renderCarrito cuando la página se cargue para mostrar el carrito actualizado
+document.addEventListener('DOMContentLoaded', () => {
+    renderCarrito();
+    totalProductos();
+});
